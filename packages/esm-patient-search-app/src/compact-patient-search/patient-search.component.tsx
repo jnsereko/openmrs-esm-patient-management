@@ -86,7 +86,7 @@ const PatientSearch = React.forwardRef<HTMLDivElement, PatientSearchProps>(
                 plural: searchResults.length === 0 || searchResults.length > 1 ? 's' : '',
               })}
             </p>
-            <PatientSearchResults patients={searchResults} selectPatientAction={selectPatientAction} ref={ref} />
+            <PatientSearchResults patient={searchResults} selectPatientAction={selectPatientAction} ref={ref} />
             {hasMore && (
               <div className={styles.loadingIcon} ref={loadingIconRef}>
                 <Loading withOverlay={false} small />
@@ -98,7 +98,11 @@ const PatientSearch = React.forwardRef<HTMLDivElement, PatientSearchProps>(
     }
 
     return (
-      <div className={styles.searchResultsContainer}>
+      <div
+        className={styles.searchResultsContainer}
+        style={{
+          maxHeight: '22rem',
+        }}>
         <div className={styles.searchResults}>
           <Layer>
             <Tile className={styles.emptySearchResultsTile}>

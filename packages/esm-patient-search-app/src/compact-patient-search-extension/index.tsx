@@ -80,6 +80,23 @@ const CompactPatientSearchComponent: React.FC<CompactPatientSearchProps> = ({
     }
   }, [focussedResult, bannerContainerRef, handleFocusToInput]);
 
+  const onSearchResultClick = useCallback(
+    (evt, patient: SearchedPatient) => {
+      evt.preventDefault();
+      if (selectPatientAction) {
+        selectPatientAction(patient);
+      } else {
+        navigate({
+          to: `${interpolateString(config.search.patientResultUrl, {
+            patientUuid: patient.uuid,
+          })}/${encodeURIComponent(config.search.redirectToPatientDashboard)}`,
+        });
+      }
+      handleReset();
+    },
+    [config.search, handleReset, selectPatientAction],
+  );
+
   return (
     <div className={styles.patientSearchBar}>
       <form onSubmit={handleSubmit} className={styles.searchArea}>

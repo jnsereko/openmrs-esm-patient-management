@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { navigate, interpolateString, useConfig } from '@openmrs/esm-framework';
+import { navigate, interpolateString, useConfig, useSession, setSessionLocation } from '@openmrs/esm-framework';
 import PatientSearch from './patient-search.component';
 import PatientSearchBar from '../patient-search-bar/patient-search-bar.component';
 import styles from './compact-patient-search.scss';
 import { SearchedPatient } from '../types';
 import debounce from 'lodash-es/debounce';
 import useArrowNavigation from '../hooks/useArrowNavigation';
-import { usePatientSearchInfinite } from '../patient-search.resource';
+import { usePatientSearchInfinite, registerPatientToUser, useUserVisitedPatients } from '../patient-search.resource';
+import RecentSearch from '../recent-patient-charts/recent-patient-charts.component';
 
 interface CompactPatientSearchProps {
   isSearchPage: boolean;
@@ -30,6 +31,11 @@ const CompactPatientSearchComponent: React.FC<CompactPatientSearchProps> = ({
   const config = useConfig();
   const patientSearchResponse = usePatientSearchInfinite(searchTerm, config.includeDead, showSearchResults);
   const { data: patients } = patientSearchResponse;
+  const { patientsVisited, mutate: mutateUser } = useUserVisitedPatients();
+  const {
+    user,
+    sessionLocation: { uuid: currentLocation },
+  } = useSession();
 
   const handleFocusToInput = useCallback(() => {
     var len = inputRef.current.value?.length ?? 0;
@@ -53,10 +59,23 @@ const CompactPatientSearchComponent: React.FC<CompactPatientSearchProps> = ({
             patientUuid: patients[index].uuid,
           })}/${encodeURIComponent(config.search.redirectToPatientDashboard)}`,
         });
+        registerPatientToUser(patients[index].uuid, user).then(() => {
+          setSessionLocation(currentLocation, new AbortController());
+          mutateUser();
+        });
       }
       handleCloseSearchResults();
     },
-    [config.search, selectPatientAction, patients, handleCloseSearchResults],
+    [
+      selectPatientAction,
+      handleCloseSearchResults,
+      patients,
+      config.search.patientResultUrl,
+      config.search.redirectToPatientDashboard,
+      user,
+      currentLocation,
+      mutateUser,
+    ],
   );
   const focussedResult = useArrowNavigation(patients?.length ?? 0, handlePatientSelection, handleFocusToInput, -1);
 
@@ -103,16 +122,21 @@ const CompactPatientSearchComponent: React.FC<CompactPatientSearchProps> = ({
         onClear={onClear}
         ref={inputRef}
       />
-      {!isSearchPage && showSearchResults && (
-        <div className={styles.floatingSearchResultsContainer} data-testid="floatingSearchResultsContainer">
-          <PatientSearch
-            query={searchTerm}
-            selectPatientAction={handlePatientSelection}
-            ref={bannerContainerRef}
-            {...patientSearchResponse}
-          />
-        </div>
-      )}
+      {!isSearchPage &&
+        (showSearchResults ? (
+          <div className={styles.floatingSearchResultsContainer} data-testid="floatingSearchResultsContainer">
+            <PatientSearch
+              query={searchTerm}
+              selectPatientAction={handlePatientSelection}
+              ref={bannerContainerRef}
+              {...patientSearchResponse}
+            />
+          </div>
+        ) : (
+          <div className={styles.floatingSearchResultsContainer} data-testid="floatingRecentSearchResultsContainer">
+            <RecentSearch selectPatientAction={handlePatientSelection} patientsVisited={patientsVisited} />
+          </div>
+        ))}
     </div>
   );
 };
