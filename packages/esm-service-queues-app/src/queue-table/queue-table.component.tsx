@@ -5,7 +5,6 @@ import {
   DataTable,
   DataTableSkeleton,
   InlineLoading,
-  Pagination,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +20,7 @@ import {
   Tile,
 } from '@carbon/react';
 import { isDesktop, useLayoutType, usePagination } from '@openmrs/esm-framework';
+import TranslatedPagination from './translated-pagination.component';
 import { type QueueEntry, type QueueTableColumn } from '../types';
 import { useColumns } from './cells/columns.resource';
 import styles from './queue-table.scss';
@@ -172,7 +172,7 @@ function QueueTable({
             </div>
           )}
           {paginated && (
-            <Pagination
+            <TranslatedPagination
               forwardText={t('nextPage', 'Next page')}
               backwardText={t('previousPage', 'Previous page')}
               page={currentPage}
