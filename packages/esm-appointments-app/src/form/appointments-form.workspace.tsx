@@ -185,8 +185,13 @@ const AppointmentsForm: React.FC<Workspace2DefinitionProps<AppointmentsFormProps
   const { t } = useTranslation();
   const isTablet = useLayoutType() === 'tablet';
   const locations = useLocations(appointmentLocationTagName);
-  const providers = useProviders();
   const session = useSession();
+  // assumes only a single previously-scheduled provider with state "ACCEPTED", if multiple, just takes the first
+  const defaultProvider =
+    appointment?.providers?.find((provider) => provider.response === 'ACCEPTED')?.uuid ??
+    session?.currentProvider?.uuid ??
+    '';
+  const providers = useProviders(defaultProvider);
 
   const selectedDate = useSelectedDate();
   const { serviceTypes, isLoading } = useAppointmentServices();
@@ -241,10 +246,7 @@ const AppointmentsForm: React.FC<Workspace2DefinitionProps<AppointmentsFormProps
     resolver: zodResolver(appointmentsFormSchema),
     defaultValues: {
       location: appointment?.location?.uuid ?? session?.sessionLocation?.uuid ?? '',
-      provider:
-        appointment?.providers?.find((provider) => provider.response === 'ACCEPTED')?.uuid ??
-        session?.currentProvider?.uuid ??
-        '', // assumes only a single previously-scheduled provider with state "ACCEPTED", if multiple, just takes the first
+      provider: defaultProvider,
       appointmentNote: appointment?.comments || '',
       appointmentStatus: appointment?.status || '',
       appointmentType: appointment?.appointmentKind || (appointmentTypes?.length === 1 ? appointmentTypes[0] : ''),

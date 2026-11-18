@@ -59,6 +59,15 @@ export const configSchema = {
       (openmrsSpaBase and openBase are available to any <ConfigurableLink>)`,
     _validators: [validators.isUrlWithTemplateParameters(['patientUuid'])],
   },
+  excludedProviderIdentifiers: {
+    _type: Type.Array,
+    _default: [],
+    _description:
+      'Identifiers of the providers left out of the appointment form\'s provider list, such as the admin and service accounts. An entry ending with * excludes every identifier starting with the text before it, e.g. "service-account-*".',
+    _elements: {
+      _type: Type.String,
+    },
+  },
   includePhoneNumberInExcelSpreadsheet: {
     _type: Type.Boolean,
     _default: false,
@@ -115,6 +124,7 @@ export interface ConfigObject {
     customUrl: string;
   };
   customPatientChartUrl: string;
+  excludedProviderIdentifiers: Array<string>;
   includePhoneNumberInExcelSpreadsheet: boolean;
   patientIdentifierType: string;
   showUnscheduledAppointmentsTab: boolean;

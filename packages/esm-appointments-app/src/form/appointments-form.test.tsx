@@ -117,6 +117,16 @@ describe('AppointmentForm', () => {
     return toggles.find((toggle) => toggle.getAttribute('id') === 'allDayToggle');
   };
 
+  it("keeps the signed-in user's provider in the provider list, as it is the one the form preselects (UVL-EMR #766)", async () => {
+    mockOpenmrsFetch.mockResolvedValue(mockUseAppointmentServiceData as unknown as FetchResponse);
+
+    renderWithSwr(<AppointmentForm {...defaultProps} />);
+
+    await waitForLoadingToFinish();
+
+    expect(mockUseProviders).toHaveBeenCalledWith(mockSession.data.currentProvider.uuid);
+  });
+
   it('renders the appointments form', async () => {
     mockOpenmrsFetch.mockResolvedValue(mockUseAppointmentServiceData as unknown as FetchResponse);
 

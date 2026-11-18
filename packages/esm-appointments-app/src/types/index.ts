@@ -144,6 +144,7 @@ export interface AppointmentSummary {
 export interface Provider {
   uuid: string;
   display: string;
+  identifier?: string;
   comments?: string;
   response?: string;
   person: OpenmrsResource;
